@@ -19,8 +19,11 @@ package org.apache.drill.exec.store.http;
 
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import com.beust.jcommander.internal.Lists;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,8 +39,10 @@ public class HttpScanSpec {
   private List<FilterOperator> filterArgs = new ArrayList<FilterOperator>();
   protected List<Boolean> filterBooleanAnds = new ArrayList<Boolean>();
   protected List<String> groupByCols;
-  protected List<String> orderByCols;
-  protected List<String> OriginalOrderByCols;
+/*  protected List<String> orderByCols;
+  protected List<String> originalOrderByCols;*/
+  protected  Map<Integer, OrderByColumn> orderByColsMap;
+  protected  Map<Integer, OrderByColumn> originalOrderByColsMap;
   protected Long limitValue;
   
   
@@ -139,8 +144,62 @@ public void setFilterBooleanAnds(List<Boolean> filterBooleanAnds) {
     public void setGroupByCols(List<String> groupByCols) {
     	this.groupByCols = groupByCols;
     }
+	@JsonIgnore
+	//TODO current there is an issue the 2td phase ,can't get the correct order by dirrection.
+	public List<String> generateOrderByCols() {
+		List<String> orderByCols = Lists.newArrayList();
 
-	public List<String> getOrderByCols() {
+		//if(! orderByColsMap.equals(originalOrderByColsMap)){
+		if(orderByColsMap == null || orderByColsMap.size() == 0)	{
+			return null;
+		}
+		for(Integer index : orderByColsMap.keySet()){
+			String col = orderByColsMap.get(index).getFieldName();
+			String dirrection = orderByColsMap.get(index).getDirection();
+			OrderByColumn orderByColumn = originalOrderByColsMap.get(index);
+			if(orderByColumn != null){
+				dirrection = orderByColumn.getDirection();
+			}
+			
+			orderByCols.add((new StringBuilder().append(col).append(" ").append(dirrection)).toString());
+		}			
+/*			
+			if(orderByColsMap.size() == originalOrderByColsMap.size()){
+				Iterator<String> it = originalOrderByColsMap.values().iterator();
+				for(String col: orderByColsMap.keySet()){
+					//String orderByDirection = originalOrderByColsMap.get(col);
+					orderByCols.add((new StringBuilder().append(col).append(" ").append(it.next())).toString());
+				}
+				
+			} else {
+				//TODO maybe not correct
+				for(String col: orderByColsMap.keySet()){
+					String orderByDirection = originalOrderByColsMap.get(col);
+					orderByCols.add((new StringBuilder().append(col).append(" ").append(orderByDirection == null ? orderByColsMap.get(col) : orderByDirection)).toString());
+				}
+			}*/
+
+		//}
+		return orderByCols;
+	}
+	
+	public Map<Integer, OrderByColumn> getOrderByColsMap() {
+		return orderByColsMap;
+	}
+	@JsonIgnore
+	public void setOrderByColsMap(Map<Integer, OrderByColumn> orderByColsMap) {
+		this.orderByColsMap = orderByColsMap;
+	}
+
+	public Map<Integer, OrderByColumn> getOriginalOrderByColsMap() {
+		return originalOrderByColsMap;
+	}
+	@JsonIgnore
+	public void setOriginalOrderByColsMap(Map<Integer, OrderByColumn> originalOrderByColsMap) {
+		this.originalOrderByColsMap = originalOrderByColsMap;
+	}
+
+/*	public List<String> getOrderByCols() {
 		return orderByCols;
 	}
 
@@ -150,12 +209,12 @@ public void setFilterBooleanAnds(List<Boolean> filterBooleanAnds) {
 	}
 	@JsonIgnore
 	public List<String> getOriginalOrderByCols() {
-		return OriginalOrderByCols;
+		return originalOrderByCols;
 	}
 	@JsonIgnore
 	public void setOriginalOrderByCols(List<String> originalOrderByCols) {
-		OriginalOrderByCols = originalOrderByCols;
-	}
+		this.originalOrderByCols = originalOrderByCols;
+	}*/
 
 	public Long getLimitValue() {
 		return limitValue;

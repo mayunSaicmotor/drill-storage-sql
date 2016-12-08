@@ -22,7 +22,6 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.apache.drill.common.expression.SchemaPath;
-import org.apache.drill.exec.store.AbstractRecordReader;
 import org.apache.drill.exec.store.http.util.DBUtil;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

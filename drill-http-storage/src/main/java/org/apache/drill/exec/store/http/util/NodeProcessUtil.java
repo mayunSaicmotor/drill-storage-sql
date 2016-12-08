@@ -2,21 +2,55 @@ package org.apache.drill.exec.store.http.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexNode;
 import org.apache.drill.exec.physical.base.GroupScan;
 import org.apache.drill.exec.planner.logical.DrillScanRel;
 import org.apache.drill.exec.planner.physical.Prel;
 import org.apache.drill.exec.planner.physical.ScanPrel;
+import org.apache.drill.exec.store.http.OrderByColumn;
+
+import com.beust.jcommander.internal.Maps;
+import com.google.common.collect.Lists;
 
 public class NodeProcessUtil {
 	
+	
+	
+	public static Map<Integer, OrderByColumn> getOrderByColsMap(final Prel sort) {
+		
+		//List<RexNode> orderByCols = sort.getChildExps();
+		Map<Integer, OrderByColumn> orderByColMap =Maps.newLinkedHashMap();
+		List<RelCollation> collationList = sort.getCollationList();
+		
+		
+		
+		for (RelCollation relCollation : collationList) {
+			
+			List<RelFieldCollation>  relFieldCollationList = relCollation.getFieldCollations();
+			
+			for (RelFieldCollation relFieldCollation : relFieldCollationList) {
+				
+		/*		relFieldCollation.getFieldIndex();
+				relFieldCollation.getDirection();*/
+
+				orderByColMap.put(relFieldCollation.getFieldIndex(),
+						new OrderByColumn(
+								sort.getRowType().getFieldList().get(relFieldCollation.getFieldIndex()).getName(),
+								relFieldCollation.getDirection().shortString));
+			}
+
+			//TODO
+			break;
+
+		}
+		
+		return orderByColMap;
+	}
 	
 	
 	public static List<String> getOrderBycols(final Prel sort) {

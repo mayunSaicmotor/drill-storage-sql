@@ -85,7 +85,7 @@ public class HttpGroupScan extends AbstractGroupScan implements HttpConstants {
   private boolean filterPushedDown = false;
   private boolean groupByPushedDown = false;
   private boolean orderByPushedDown = false;
-  private boolean orderByAggFunc = false;
+  //private boolean orderByAggFunc = false;
   private boolean limitPushedDown = false;
 
   
@@ -131,7 +131,7 @@ public class HttpGroupScan extends AbstractGroupScan implements HttpConstants {
     this.groupByPushedDown = that.groupByPushedDown;
     this.orderByPushedDown = that.orderByPushedDown;
     this.limitPushedDown = that.limitPushedDown;
-    this.orderByAggFunc = that.orderByAggFunc;  
+    //this.orderByAggFunc = that.orderByAggFunc;  
 	this.httpWorks = that.httpWorks;
     //this.statsCalculator = that.statsCalculator;
     //this.scanSizeInBytes = that.scanSizeInBytes;
@@ -278,6 +278,10 @@ public class HttpGroupScan extends AbstractGroupScan implements HttpConstants {
 
 		endpointFragmentMapping = Maps.newHashMapWithExpectedSize(numSlots);
 
+		Boolean executeLimitFlg = calcExecuteLimitFlg();
+		List<String> orderByCols = httpScanSpec.generateOrderByCols();
+
+		
 		for (int i = 0; i < httpWorks.size(); i++) {
 
 			int slotIndex = i % numSlots;
@@ -288,7 +292,6 @@ public class HttpGroupScan extends AbstractGroupScan implements HttpConstants {
 				endpointSlotScanList = new ArrayList<HttpSubScanSpec>(maxPerEndpointSlot);
 			}
 			
-			Boolean executeLimitFlg = calcExecuteLimitFlg();	
 			//TODO
 			HttpSubScanSpec tmpScanSpec = new HttpSubScanSpec(work.getDbName(),
 					httpScanSpec.getTableName(),
@@ -298,7 +301,7 @@ public class HttpGroupScan extends AbstractGroupScan implements HttpConstants {
 					work.getPartitionKeyEnd(), 
 					httpScanSpec.getFilterArgs(),
 					httpScanSpec.getGroupByCols(), 
-					httpScanSpec.getOrderByCols(),
+					orderByCols,
 					executeLimitFlg?httpScanSpec.getLimitValue():null,
 					this.columns);		
 			
@@ -314,6 +317,8 @@ public class HttpGroupScan extends AbstractGroupScan implements HttpConstants {
         watch.elapsed(TimeUnit.NANOSECONDS)/1000, incomingEndpoints, endpointFragmentMapping.toString());
   }
 
+
+
   private Boolean calcExecuteLimitFlg() {
 		Boolean executeLimitFlg = true;
 		// if it is only single major fragment, LimitPrel/SortPrel node can be
@@ -323,18 +328,35 @@ public class HttpGroupScan extends AbstractGroupScan implements HttpConstants {
 		if (this.groupByPushedDown) {
 			
 			List<String> groupByCols = httpScanSpec.getGroupByCols();
-			List<String> orderByCols = httpScanSpec.getOriginalOrderByCols();
-			
-			if (orderByCols == null || orderByCols.size() < groupByCols.size()) {
+/*			List<OrderByColumn> orderByCols = Lists.newArrayList(httpScanSpec.getOrderByColsMap().values());
+			List<OrderByColumn> originalOrderByCols = Lists.newArrayList(httpScanSpec.getOriginalOrderByColsMap().values());*/
+
+			Map<Integer, OrderByColumn> orderByColsMap = httpScanSpec.getOrderByColsMap();
+			Map<Integer, OrderByColumn> originalOrderByColsMap = httpScanSpec.getOriginalOrderByColsMap();
+
+			if(originalOrderByColsMap == null || originalOrderByColsMap.size()==0){
 				
+				return true;
+			}
+			List<String> orderByCols = Lists.newArrayList();
+			for (Integer index : originalOrderByColsMap.keySet()) {
+
+				OrderByColumn col = orderByColsMap.get(index);
+				OrderByColumn col1 = originalOrderByColsMap.get(index);
+				orderByCols.add(col == null ? col1.getFieldName() : col.getFieldName());
+			}
+
+			if (orderByCols == null || orderByCols.size() < groupByCols.size()) {
+
 				executeLimitFlg = false;
 			} else {
-				
-				// if order by cols don't start with group by cols and with the same cols order,  limit operation can't be push down
-				for (int i = 0; i < groupByCols.size(); i++) {				
+
+				// if order by cols don't start with group by cols and with the
+				// same cols order, limit operation can't be push down
+				List<String> subOrderByCols = orderByCols.subList(0, groupByCols.size());
+				for (int i = 0; i < groupByCols.size(); i++) {
 					
-					String col = orderByCols.get(i).split(" ")[0].trim();
-					if (!groupByCols.get(i).trim().equals(col)) {
+					if (! subOrderByCols.contains(groupByCols.get(i))) {
 						executeLimitFlg = false;
 						break;
 					}
@@ -514,13 +536,13 @@ public void setOrderByPushedDown(boolean orderByPushedDown) {
 	this.orderByPushedDown = orderByPushedDown;
 }
 
-public boolean isOrderByAggFunc() {
+/*public boolean isOrderByAggFunc() {
 	return orderByAggFunc;
 }
 
 public void setOrderByAggFunc(boolean orderByAggFunc) {
 	this.orderByAggFunc = orderByAggFunc;
-}
+}*/
 
 public boolean isLimitPushedDown() {
 	return limitPushedDown;

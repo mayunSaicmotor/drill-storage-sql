@@ -56,11 +56,20 @@ public class HttpQueriesTest extends HttpTestBase {
 	  JVar var1 = exampleMethodBlk.decl(type, "fieldVar1",JExpr.lit(5));*/
 	  
 	  
-	  String testSql = "select id,vin,data_date from http.`ip24data_parquet` group by id,vin,data_date order by id,vin,data_date limit 100";
-	  System.out.println(testSql);
+	   //String testSql = "select name as name1,  code as code1,  sum(score) as sum_score, avg(score) from http.`student` group by code, name  order by code1, sum_score desc, name1 desc limit 5";
+	    //runHttpSQLVerifyCount(testSql,1);
+	
+	  String testSql = "select name as name1,  code as code1,  sum(score) as sum_score, avg(score) from http.`student` group by name, code  order by name1 desc, code1, sum_score desc limit 5";
+	    runHttpSQLVerifyCount(testSql,1);
+	    
+	   //testSql = "select id,vin,data_date from http.`ip24data_parquet` group by id,vin,data_date order by id,vin,data_date limit 100";
+	  testSql = "select name,  code,  sum(score), avg(score) from http.`student` group by name, code  order by name desc, code desc limit 5";
     runHttpSQLVerifyCount(testSql,1);
     
-    runHttpSQLVerifyCount(testSql,1);
+	  testSql = "select name as name1,  code as name2,  sum(score), avg(score) from http.`student` group by name, code  order by name1 , name2 desc limit 5";
+	    runHttpSQLVerifyCount(testSql,1);
+    
+ 
     //List<QueryDataBatch> list = testRunAndReturn(QueryType.SQL, queryString);
     //System.out.println(list);
     
@@ -166,7 +175,8 @@ public class HttpQueriesTest extends HttpTestBase {
 	  
 	  //TODO
 	  String mysql ="select name, sum(score) as sum_score from student group by name order by sum_score limit 3";
-	  String testSql = "select name, sum(score) as sum_score from http.`student` group by name order by sum_score limit 3";
+	  //String testSql = "select name, sum(score) as sum_score from http.`student` group by name order by sum_score limit 3";
+	  String testSql = "select name, count(name) as count_score  , code from http.`student` group by name, code order by count_score desc limit 3";
 	  System.out.println(testSql);
     runHttpSQLVerifyCount(testSql,1);
     //List<QueryDataBatch> list = testRunAndReturn(QueryType.SQL, queryString);

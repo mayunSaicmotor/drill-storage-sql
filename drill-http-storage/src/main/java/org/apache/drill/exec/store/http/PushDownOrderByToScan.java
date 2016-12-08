@@ -18,6 +18,7 @@
 package org.apache.drill.exec.store.http;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
@@ -184,12 +185,13 @@ public abstract class PushDownOrderByToScan extends StoragePluginOptimizerRule {
 			// final RexNode condition = limit.get;
 			logger.debug("Http onMatch");
 			
-			List<String> orderFields = NodeProcessUtil.getOrderBycols(sort);
-			if(orderFields == null){
+			//TODO
+			//List<String> orderFields = NodeProcessUtil.getOrderBycols(sort);
+			Map<Integer, OrderByColumn> orderFieldsMap = NodeProcessUtil.getOrderByColsMap(sort);
+			if(orderFieldsMap == null){
 				return;
-			}
-			
-			setOrderFields(groupScan, orderFields);
+			}			
+			setOrderFieldsMap(groupScan, orderFieldsMap);
 
 			//groupScan.setOrderByPushedDown(true);
 			
@@ -236,12 +238,12 @@ public abstract class PushDownOrderByToScan extends StoragePluginOptimizerRule {
 			// final RexNode condition = limit.get;
 			logger.debug("Http onMatch");
 			
-			List<String> orderFields = NodeProcessUtil.getOrderBycols(sort);
-			if(orderFields == null){
+			Map<Integer, OrderByColumn>  orderFieldsMap = NodeProcessUtil.getOrderByColsMap(sort);
+			if(orderFieldsMap == null){
 				return;
-			}
-			
-			setOrderFields(groupScan, orderFields);
+			}			
+			setOrderFieldsMap(groupScan, orderFieldsMap);
+
 
 			//groupScan.setOrderByPushedDown(true);
 			
@@ -267,12 +269,12 @@ public abstract class PushDownOrderByToScan extends StoragePluginOptimizerRule {
 			return;
 		}
 		
-		List<String> orderFields = NodeProcessUtil.getOrderBycols(sortPrelOrTopnPrel);
-		if(orderFields == null){
+		Map<Integer, OrderByColumn>  orderFieldsMap = NodeProcessUtil.getOrderByColsMap(sortPrelOrTopnPrel);
+		if(orderFieldsMap == null){
 			return;
-		}
+		}			
+		setOrderFieldsMap(groupScan, orderFieldsMap);
 
-		setOrderFields(groupScan, orderFields);
 
 		groupScan.setOrderByPushedDown(true);
 		
@@ -292,7 +294,7 @@ public abstract class PushDownOrderByToScan extends StoragePluginOptimizerRule {
 
 	}
 
-	private static void setOrderFields(HttpGroupScan groupScan, List<String> orderFields) {
+/*	private static void setOrderFields(HttpGroupScan groupScan, List<String> orderFields) {
 		//TODO not sure it is can confirm it is agg func
 		List<String> originalOrderByCols = groupScan.getHttpScanSpec().getOriginalOrderByCols();
 		if(originalOrderByCols!=null){
@@ -306,6 +308,24 @@ public abstract class PushDownOrderByToScan extends StoragePluginOptimizerRule {
 			groupScan.getHttpScanSpec().setOriginalOrderByCols(orderFields);
 		}
 		groupScan.getHttpScanSpec().setOrderByCols(orderFields);
+	}*/
+	
+	private static void setOrderFieldsMap(HttpGroupScan groupScan, Map<Integer, OrderByColumn> orderFieldsMap) {
+		//TODO not sure it is can confirm it is agg func
+		Map<Integer, OrderByColumn>  originalOrderByColsMap = groupScan.getHttpScanSpec().getOriginalOrderByColsMap();
+	/*	if(originalOrderByColsMap!=null){
+			
+			//TODO
+			if(!originalOrderByColsMap.values().equals(orderFieldsMap.values())) {
+				groupScan.setOrderByAggFunc(true);
+			}
+
+			
+		} else {*/
+		if (originalOrderByColsMap == null) {
+			groupScan.getHttpScanSpec().setOriginalOrderByColsMap(orderFieldsMap);
+		}
+		groupScan.getHttpScanSpec().setOrderByColsMap(orderFieldsMap);
 	}
 
 }
