@@ -21,19 +21,19 @@ import java.math.BigDecimal;
 
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.drill.exec.physical.base.GroupScan;
 import org.apache.drill.exec.planner.logical.RelOptHelper;
 import org.apache.drill.exec.planner.physical.LimitPrel;
+import org.apache.drill.exec.planner.physical.Prel;
 import org.apache.drill.exec.planner.physical.ProjectPrel;
 import org.apache.drill.exec.planner.physical.ScanPrel;
+import org.apache.drill.exec.planner.physical.SingleMergeExchangePrel;
+import org.apache.drill.exec.planner.physical.UnionExchangePrel;
 import org.apache.drill.exec.store.StoragePluginOptimizerRule;
 import org.apache.drill.exec.store.http.util.NodeProcessUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
 
 public abstract class PushDownLimitToScan extends StoragePluginOptimizerRule {
   private static final Logger logger = LoggerFactory .getLogger(PushDownLimitToScan.class);
@@ -92,7 +92,7 @@ public abstract class PushDownLimitToScan extends StoragePluginOptimizerRule {
 
 		@Override
 		public boolean matches(RelOptRuleCall call) {
-			final ScanPrel scan = (ScanPrel) call.rel(1);
+			final ScanPrel scan = (ScanPrel) call.rel(2);
 			if (scan.getGroupScan() instanceof HttpGroupScan) {
 				return super.matches(call);
 			}
@@ -113,7 +113,7 @@ public abstract class PushDownLimitToScan extends StoragePluginOptimizerRule {
 		// final RexNode condition = limit.get;
 		logger.debug("Http onMatch");
 
-		groupScan.getHttpScanSpec().setLimitValue(limitValue.longValueExact());
+		groupScan.getHttpScanSpec().setLimitValue(limitValue.intValueExact());
 		groupScan.setLimitPushedDown(true);
 		
 /*		if(project != null){
@@ -144,31 +144,7 @@ public abstract class PushDownLimitToScan extends StoragePluginOptimizerRule {
 		@Override
 		public void onMatch(RelOptRuleCall call) {
 
-			final LimitPrel limit = (LimitPrel) call.rel(0);
-			BigDecimal limitValue = (BigDecimal) ((RexLiteral) (limit.getFetch())).getValue();
-			logger.debug("Http onMatch");
-
-
-/*			RelSubset relSubset = ((RelSubset) limit.getInput());
-			List<RelNode> relNodes = relSubset.getRelList();*/
-			
-			GroupScan scan = NodeProcessUtil.findGroupScan(limit);
-			if(scan == null || !(scan instanceof HttpGroupScan)) {
-				return;
-			}
-			
-			//AbstractConverter ss ;
-			HttpGroupScan groupScan = (HttpGroupScan) scan;
-			if (groupScan.isLimitPushedDown()) {
-				return;
-			}
-			// final RexNode condition = limit.get;
-			logger.debug("Http onMatch");
-
-			// TODO actually if has group by, we can't push limit to scan
-			groupScan.getHttpScanSpec().setLimitValue(limitValue.longValueExact());
-/*			groupScan.setLimitPushedDown(true);
-			call.transformTo(scan);*/
+			setLimitValue(call);
 
 		}
 
@@ -187,5 +163,77 @@ public abstract class PushDownLimitToScan extends StoragePluginOptimizerRule {
 
 	};
 
+	
+	//TODO consider can't push down limit when has group by.
+	//it can get the  limit number but didn't do the pushdown(call.transformTo(scan))
+	public static final StoragePluginOptimizerRule LIMIT_ON_SINGLEMERGEEXCHANGE = new PushDownLimitToScan(
+			RelOptHelper.some(LimitPrel.class, RelOptHelper.any(SingleMergeExchangePrel.class)), "PushDownLimitToScan:Common_Limit_On_SingleMergeExchange") {
+		@Override
+		public void onMatch(RelOptRuleCall call) {
+
+			setLimitValue(call);
+
+		}
+
+
+
+		@Override
+		public boolean matches(RelOptRuleCall call) {
+			final LimitPrel limit = (LimitPrel) call.rel(0);
+			return super.matches(call);
+		}
+
+	};
+	
+	//TODO consider can't push down limit when has group by.
+	//it can get the  limit number but didn't do the pushdown(call.transformTo(scan))
+	public static final StoragePluginOptimizerRule LIMIT_ON_UNIONEXCHANGE = new PushDownLimitToScan(
+			RelOptHelper.some(LimitPrel.class, RelOptHelper.any(UnionExchangePrel.class)), "PushDownLimitToScan:Common_Limit_On_UnionExchange") {
+		@Override
+		public void onMatch(RelOptRuleCall call) {
+
+			setLimitValue(call);
+
+		}
+
+		@Override
+		public boolean matches(RelOptRuleCall call) {
+			final LimitPrel limit = (LimitPrel) call.rel(0);
+			return super.matches(call);
+		}
+
+	};
+	
+	
+	public void setLimitValue(RelOptRuleCall call) {
+		final LimitPrel limit = (LimitPrel) call.rel(0);
+		BigDecimal limitValue = (BigDecimal) ((RexLiteral) (limit.getFetch())).getValue();
+		logger.debug("Http onMatch");
+
+		
+		GroupScan scan = (GroupScan)NodeProcessUtil.findGroupScan(limit);
+		if(scan == null || !(scan instanceof HttpGroupScan)) {
+			return;
+		}
+/*		//TODO set order by fields
+		Prel prel = (Prel)call.rel(1);
+		if(prel instanceof SingleMergeExchangePrel){
+			PushDownOrderByToScan.findAndSetOrderByFields( prel, scan);
+		}*/
+
+		
+		//AbstractConverter ss ;
+		HttpGroupScan groupScan = (HttpGroupScan) scan;
+		if (groupScan.isLimitPushedDown()) {
+			return;
+		}
+		// final RexNode condition = limit.get;
+		logger.debug("Http onMatch");
+
+		// TODO actually if has group by, we can't push limit to scan
+		groupScan.getHttpScanSpec().setLimitValue(limitValue.intValueExact());
+/*			groupScan.setLimitPushedDown(true);
+		call.transformTo(scan);*/
+	}
 }
 

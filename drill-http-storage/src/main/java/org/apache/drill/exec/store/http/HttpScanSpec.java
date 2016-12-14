@@ -43,7 +43,7 @@ public class HttpScanSpec {
   protected List<String> originalOrderByCols;*/
   protected  Map<Integer, OrderByColumn> orderByColsMap;
   protected  Map<Integer, OrderByColumn> originalOrderByColsMap;
-  protected Long limitValue;
+  protected Integer limitValue;
   
   
 
@@ -216,11 +216,11 @@ public void setFilterBooleanAnds(List<Boolean> filterBooleanAnds) {
 		this.originalOrderByCols = originalOrderByCols;
 	}*/
 
-	public Long getLimitValue() {
+	public Integer getLimitValue() {
 		return limitValue;
 	}
 	@JsonIgnore
-	public void setLimitValue(Long limitValue) {
+	public void setLimitValue(Integer limitValue) {
 		this.limitValue = limitValue;
 	}
 	@JsonIgnore

@@ -71,17 +71,28 @@ public class DrillJdbcTest {
 
 	private static List<Long> drillTimes = Lists.newArrayList();
 	private static List<Long> mysqlTimes = Lists.newArrayList();
-	private static List<Long> testTimes = Lists.newArrayList();
+	public static List<String> testSqlResult = Lists.newArrayList();
 	
 	private static List<String> groupByColumns = Lists.newArrayList();
-	private static String ALL_COLUMNS="id,vin,data_date,data_version,event_id,work_can,work_model,bmscelltempmax,bmscelltempmin,bmscoolanttemp,bmshvilstat,bmsmainralaysstat,bmsptisolation,bmspackcurrent,bmspacksoc,bmspackvolt,bmspumpstat,chargerfanstatus,chargerhvcurrent,chargerhvrelaystatus,chargerhvvolt,chargerlvcurrent,chargerlvvolt,closemainrelaysreq,clutch1state,clutch2state,cruisetargetspeedset,dccurrenthv,dccurrentmaxhv,dcdcchargefault,dcmodereq,dcovercurrenthv,dcovertemp,dcovervolthv,dcovervoltlv,dcstate,dctemp,dcundervolthv,dcundervoltlv,dcvoltfail,dcvolthv,dcvoltlv,dcvoltsetpointfb,directfuelcutreq,drivertorquereq,drivertorquereqvalid,educoolanttemphs,ememergencyshutdown,egasopenreq,emergencypoweroffreq,engdragtorquevalid,engfuelpumpreq,engtorquefastreq,engtorqueslowreq,fuelcutrequest,gearactualvalid,gearshiftactive,gearshiftposn,gearshiftposnvalid,gps_status,hevfault,hevsystemmode,hevtorquemax,isgacshortcircready,isgdampingctrlreq,isgfailure,isghvready,isginvttemp,isgmodereq,isgoffsetangle,isgpumpstatus,isgrotortemp,isgspeed,isgspeedreq,isgstate,isgtemp,isgtorqueactual,isgtorquereq,keyswitchstatecrk,keyswitchstateign,latitude,longitude,original_latitude,original_longitude,mbregen,odo_primary,orientation,ptready,ptsyspwr,reserved1,reserved10,reserved11,reserved12,reserved13,reserved14,reserved15,reserved16,reserved17,reserved2,reserved3,reserved4,reserved5,reserved6,reserved7,reserved8,reserved9,shifterlockreq,tcfailure,tmacshortcircready,tmhvready,tminvttemp,tmmodereq,tmoffsetangle,tmrotortemp,tmspeed,tmspeedreq,tmstate,tmtemp,tmtorqueactual,tmtorquelimitmax,tmtorquereq,torqueincactive,torqueredactive,transinputspeed,transinputspeedvalid,transinputtorquevalid,status,create_by,create_date,last_update_by,last_update_date,row_version,is_valid,description,status_id,isgfailure_b0,isgfailure_b1,isgfailure_b2,isgfailure_b3,isgfailure_b4,isgfailure_b5,isgfailure_b6,isgfailure_b7,tcfailure_b0,tcfailure_b1,tcfailure_b2,tcfailure_b3,tcfailure_b4,tcfailure_b5,tcfailure_b6,tcfailure_b7,gearactual_h2,bmsbasicstat,isgfaultlampon,tmfaultlampon,educoolanttemp,emsfaultlevel,shifterfail,msg_mbregenfault,brakevacuumpumpinfo,enginecoolanttemp,vehiclespeedhsc,reserved18,reserved19,reserved20,avgfuelconsumption";
+	private static String ALL_COLUMNS="id,vin,data_date,data_version,event_id,work_can,work_model,bmscelltempmax,bmscelltempmin,bmscoolanttemp,bmshvilstat,bmsmainralaysstat,bmsptisolation,bmspackcurrent,bmspacksoc,bmspackvolt,bmspumpstat,chargerfanstatus,chargerhvcurrent,chargerhvrelaystatus,chargerhvvolt,chargerlvcurrent,chargerlvvolt,closemainrelaysreq,clutch1state,clutch2state,cruisetargetspeedset,dccurrenthv,dccurrentmaxhv,dcdcchargefault,dcmodereq,dcovercurrenthv,dcovertemp,dcovervolthv,dcovervoltlv,dcstate,dctemp,dcundervolthv,dcundervoltlv,dcvoltfail,dcvolthv,dcvoltlv,dcvoltsetpointfb,directfuelcutreq,drivertorquereq,drivertorquereqvalid,educoolanttemphs,ememergencyshutdown,egasopenreq,emergencypoweroffreq,engdragtorquevalid,engfuelpumpreq,engtorquefastreq,engtorqueslowreq,fuelcutrequest,gearactualvalid,gearshiftactive,gearshiftposn,gearshiftposnvalid,gps_status,hevfault,hevsystemmode,hevtorquemax,isgacshortcircready,isgdampingctrlreq,isgfailure,isghvready,isginvttemp,isgmodereq,isgoffsetangle,isgpumpstatus,isgrotortemp,isgspeed,isgspeedreq,isgstate,isgtemp,isgtorqueactual,isgtorquereq,keyswitchstatecrk,keyswitchstateign,latitude,longitude,original_latitude,original_longitude,mbregen,odo_primary,orientation,ptready,ptsyspwr,reserved1,reserved10,reserved11,reserved12,reserved13,reserved14,reserved15,reserved16,reserved17,reserved2,reserved3,reserved4,reserved5,reserved6,reserved7,reserved8,reserved9,shifterlockreq,tcfailure,tmacshortcircready,tmhvready,tminvttemp,tmmodereq,tmoffsetangle,tmrotortemp,tmspeed,tmspeedreq,tmstate,tmtemp,tmtorqueactual,tmtorquelimitmax,tmtorquereq,torqueincactive,torqueredactive,transinputspeed,transinputspeedvalid,transinputtorquevalid,status,create_by,create_date,last_update_by,last_update_date,row_version,is_valid,description,status_id,isgfailure_b0,isgfailure_b1,isgfailure_b2,isgfailure_b3,isgfailure_b4,isgfailure_b5,isgfailure_b6,isgfailure_b7,tcfailure_b0,tcfailure_b1,tcfailure_b2,tcfailure_b3,tcfailure_b4,tcfailure_b5,tcfailure_b6,tcfailure_b7,gearactual_h2,bmsbasicstat,isgfaultlampon,tmfaultlampon,educoolanttemp,emsfaultlevel,shifterfail,msg_mbregenfault,brakevacuumpumpinfo,enginecoolanttemp,vehiclespeedhsc,reserved18,reserved19,reserved20";
 	private static  List<String> allColumns = Lists.newArrayList(ALL_COLUMNS.split(","));
 	
 	
-	private final static String RANDOM_SQL_TEMPLATE  = "select COLUMNS from ip24data_parquet group by COLUMNS order by COLUMNS limit 100";
+	private final static String RANDOM_SQL_TEMPLATE  = "select COLUMNS, count(avgfuelconsumption) from ip24data_parquet group by COLUMNS order by COLUMNS limit 100";
 	
 	private static int mysqlDbGrpCnt = 8;
 	  
+	private static boolean testflag =false;
+	
+	public static void addTestSql(String sql){
+		
+		if(testflag){
+			//synchronized(DrillJdbcTest.class){
+				DrillJdbcTest.testSqlResult.add(sql);
+				//}
+		}
+
+	}
 	public static String getRandomGroupBySQL(int groupByColCnt) {
 		Set<String> colSet = Sets.newLinkedHashSet();
 		while (colSet.size() < groupByColCnt){

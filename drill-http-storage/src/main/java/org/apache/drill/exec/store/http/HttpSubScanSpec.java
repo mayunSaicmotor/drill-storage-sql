@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 
 import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.exec.store.http.util.DBUtil;
+import org.apache.drill.exec.store.http.util.DrillJdbcTest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,7 +39,7 @@ public  class HttpSubScanSpec {
 	    private final  List<FilterOperator> filterArgs;
 	    private final  List<String> groupByCols;
 	    private final  List<String> orderByCols;
-	    private final  Long limitValue;
+	    private final  Integer limitValue;
 	    private List<SchemaPath> columns;
 	    
 	    @JsonCreator
@@ -51,7 +52,7 @@ public  class HttpSubScanSpec {
 			@JsonProperty("filterArgs") List<FilterOperator> filterArgs,
 			@JsonProperty("groupByCols") List<String> groupByCols,
 			@JsonProperty("orderByCols") List<String> orderByCols,
-			@JsonProperty("limitValue") Long limitValue, 
+			@JsonProperty("limitValue") Integer limitValue, 
 			@JsonProperty("columns") List<SchemaPath> columns) {
 		      this.dbName = dbName;
 	      this.tableName = tableName;
@@ -105,7 +106,7 @@ public  class HttpSubScanSpec {
 		public List<String> getOrderByCols() {
 			return orderByCols;
 		}
-		public Long getLimitValue() {
+		public Integer getLimitValue() {
 			return limitValue;
 		}
 		public List<SchemaPath> getColumns() {
@@ -127,8 +128,15 @@ public  class HttpSubScanSpec {
 			// TODO
 			sb.append(getSelectedFields()).append(" from ").append(tableName).append(getFilters()).append(getGroupBy()).append(getOrderBy()).append(getLimit());
 	
-			return sb.toString();
+			String sql = sb.toString();
+	
+			logSQL(sql);
+			return sql;
 	    }
+		private void logSQL(String sql) {
+			//TODO
+			DrillJdbcTest.addTestSql(sql);
+		}
 
 		private String getGroupBy() {
 			StringBuilder sb = new StringBuilder("");
