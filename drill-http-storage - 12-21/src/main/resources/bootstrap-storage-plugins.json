@@ -1,0 +1,40 @@
+{
+  "storage":{
+    http : {
+      type:"http",
+      enabled: true,
+      resultKey: "results",
+      connection: "http://blog.csdn.net",
+	   config: {
+				"alldatadb": "student",
+				"insertTestData": "false"
+			},	
+	   scanConfig: {
+				"totalRowCountOnEachNode": 3000000,
+				"avgRowSizeInBytes": 1024,
+				"colsPerRow": 5
+				
+			},				
+		dbConfig: {
+			  "student": {
+			      "driver": "com.mysql.jdbc.Driver",
+			      "url": "jdbc:mysql://10.32.47.103:3306/student",
+			      "username": "root",
+			      "password": "123"
+			    },
+			    "student1": {
+			      "driver": "com.mysql.jdbc.Driver",
+			      "url": "jdbc:mysql://10.32.47.103:3306/student1",
+			      "username": "root",
+			      "password": "123"
+			    },
+			    "student2": {
+			      "driver": "com.mysql.jdbc.Driver",
+			      "url": "jdbc:mysql://10.32.47.103:3306/student2",
+			      "username": "root",
+			      "password": "123"
+			    }				
+			}
+	}
+  }
+}

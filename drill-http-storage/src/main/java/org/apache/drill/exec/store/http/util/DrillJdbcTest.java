@@ -133,7 +133,7 @@ public class DrillJdbcTest {
 
 		  //HttpStoragePluginConfig httpStoragePluginConfig = new HttpStoragePluginConfig(null, null, null, null, null, null);
 		  
-		  Map<String, Map<String, String>> dbConfigs = Maps.newHashMap();
+		  Map<String, Map<String, String>> dbConfigsMap = Maps.newHashMap();
 		logger.info("mysqlDbGrpCnt: "+mysqlDbGrpCnt);  
 		for (int i = 1; i <= mysqlDbGrpCnt; i++) {
 			String dbName = "student" + i;
@@ -160,7 +160,7 @@ public class DrillJdbcTest {
 			dbConfig.put("username", "root");
 			dbConfig.put("password", password);
 
-			dbConfigs.put(dbName, dbConfig);
+			dbConfigsMap.put(dbName, dbConfig);
 
 			dbName = "student1" + i;
 			dbConfig = Maps.newHashMap();
@@ -169,7 +169,7 @@ public class DrillJdbcTest {
 			dbConfig.put("username", "root");
 			dbConfig.put("password", password);
 
-			dbConfigs.put(dbName, dbConfig);
+			dbConfigsMap.put(dbName, dbConfig);
 		}
 		  
 
@@ -179,9 +179,9 @@ public class DrillJdbcTest {
 		  dbConfig.put("username", "");
 		  dbConfig.put("password", "");	
 		  
-		  dbConfigs.put("drilldb", dbConfig);
+		  dbConfigsMap.put("drilldb", dbConfig);
 		   
-		  DBUtil.initDataSource(dbConfigs);
+		  DBUtil.initDataSource(dbConfigsMap);
 	} 
 	
 /*	
