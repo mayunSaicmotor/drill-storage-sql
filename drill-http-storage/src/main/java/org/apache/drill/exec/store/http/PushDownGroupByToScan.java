@@ -741,27 +741,10 @@ public abstract class PushDownGroupByToScan extends StoragePluginOptimizerRule {
 					// add new Project Field
 					//newPojectFields.add(newProjectField);
 					
-					// if it is function call
-					if (oldProjectChildExp instanceof RexCall) {
 
-						//RexCall oldRexCall = (RexCall) (oldProjectChildExp);
-						RexCall newRCall = cloneRexCallWithDifferentIndex((RexCall) (oldProjectChildExp), newFieldIndex, newType);
-						newProjectChildExps.add(newFieldIndex, newRCall);
-					} else if(oldProjectChildExp instanceof RexInputRef){
-						
-						RexNode operandNode = new RexInputRef(newFieldIndex, newType);
-						
-						newProjectChildExps.add(newFieldIndex, operandNode);
-					} else if(oldProjectChildExp instanceof RexLiteral){
-						//RexLiteral  newRexLiteral= RexBuilder.makeLiteral(((RexLiteral)oldProjectChildExp).getValue(),((RexLiteral)oldProjectChildExp).getType(), oldHashField.getType().getSqlTypeName());
-						RexNode operandNode = new RexInputRef(newFieldIndex, oldHashField.getType());
-						newProjectChildExps.add(newFieldIndex, operandNode);
-					} else{
-						
-						//TODO
-						logger.error("unknow type");
-						//throw new Exception("unknow type");
-					}
+					// if it is function call
+					newProjectChildExps.add(newFieldIndex,
+							createNewProjectChildExps(newFieldIndex, oldHashField, newType, oldProjectChildExp));
 					
 /*					RexCall oldRexCall = (RexCall) (oldProjectChildExp);
 					RexCall newRCall = cloneRexCallWithDifferentIndex(oldRexCall, newFieldIndex, newType);
@@ -778,7 +761,11 @@ public abstract class PushDownGroupByToScan extends StoragePluginOptimizerRule {
 					List<RexNode> oldProjectChildExps = project.getChildExps();
 					//newPojectFields.add(hashFields.get(newFieldIndex));
 					oldProjectIndex++;
-					newProjectChildExps.add(newFieldIndex, oldProjectChildExps.get(oldProjectIndex));
+					
+					newProjectChildExps.add(newFieldIndex,
+							createNewProjectChildExps(newFieldIndex, oldHashField, oldHashField.getType(), oldProjectChildExps.get(oldProjectIndex)));
+					
+					//newProjectChildExps.add(newFieldIndex, oldProjectChildExps.get(oldProjectIndex));
 				}
 			}
 
@@ -800,6 +787,34 @@ public abstract class PushDownGroupByToScan extends StoragePluginOptimizerRule {
 		return newScanPrel;
 	}
 
+	public RexNode createNewProjectChildExps(int newFieldIndex,
+			RelDataTypeField oldHashField, RelDataType newType, RexNode oldProjectChildExp) {
+		//RexNode rexNode = null;
+		if (oldProjectChildExp instanceof RexCall) {
+
+			//RexCall oldRexCall = (RexCall) (oldProjectChildExp);
+			RexCall newRCall = cloneRexCallWithDifferentIndex((RexCall) (oldProjectChildExp), newFieldIndex, newType);
+			//newProjectChildExps.add(newFieldIndex, newRCall);
+			return newRCall;
+		} else if(oldProjectChildExp instanceof RexInputRef){
+			
+			RexNode operandNode = new RexInputRef(newFieldIndex, newType);
+			return operandNode;
+			//newProjectChildExps.add(newFieldIndex, operandNode);
+		} else if(oldProjectChildExp instanceof RexLiteral){
+			//RexLiteral  newRexLiteral= RexBuilder.makeLiteral(((RexLiteral)oldProjectChildExp).getValue(),((RexLiteral)oldProjectChildExp).getType(), oldHashField.getType().getSqlTypeName());
+			RexNode operandNode = new RexInputRef(newFieldIndex, oldHashField.getType());
+			//newProjectChildExps.add(newFieldIndex, operandNode);
+			return operandNode;
+		} else{
+			
+			//TODO
+			logger.error("unknow type");
+			//throw new Exception("unknow type");
+		}
+		
+		return null;
+	}
 
 	private int reCaculateRefScanIndex(int refScanIndex, RexNode oldProjectChildExp) {
 		// if it is function call
